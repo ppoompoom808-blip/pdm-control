@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.DM Hub Control Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: #fff; text-align: center; padding: 50px 20px; }
+        .card { background: #1e293b; padding: 30px; border-radius: 12px; display: inline-block; max-width: 400px; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { margin-bottom: 20px; color: #38bdf8; }
+        button { padding: 15px 30px; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-on { background: #22c55e; color: white; }
+        .btn-off { background: #ef4444; color: white; }
+        #status-text { margin-top: 15px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>P.DM Hub Control</h2>
+        <p>สถานะระบบปัจจุบัน</p>
+        <button id="toggle-btn" class="btn-on" onclick="toggleStatus()">กำลังโหลด...</button>
+        <p id="status-text">สถานะ: กำลังเชื่อมต่อ...</p>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            databaseURL: "https://YOUR-DATABASE-NAME.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const statusRef = db.ref('pdm_status/maintenance');
+
+        let currentStatus = false;
+
+        statusRef.on('value', (snapshot) => {
+            currentStatus = snapshot.val() || false;
+            updateUI(currentStatus);
+        });
+
+        function toggleStatus() {
+            let newStatus = !currentStatus;
+            statusRef.set(newStatus);
+        }
+
+        function updateUI(status) {
+            const btn = document.getElementById('toggle-btn');
+            const text = document.getElementById('status-text');
+            if (status) {
+                btn.className = 'btn-off';
+                btn.innerText = 'ปิดระบบ (Maintenance)';
+                text.innerText = 'สถานะ: ปิดปรับปรุง / ปิดใช้งานสคริปต์';
+            } else {
+                btn.className = 'btn-on';
+                btn.innerText = 'เปิดระบบ (Normal)';
+                text.innerText = 'สถานะ: ใช้งานได้ปกติ';
+            }
+        }
+    </script>
+</body>
+</html>
